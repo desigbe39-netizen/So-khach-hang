@@ -1,0 +1,716 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sổ Quản Lý Nối Mi - AN NHIEN BEAUTY</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts: Plus Jakarta Sans -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+                    },
+                    colors: {
+                        annhien: {
+                            50: '#fff5f7',
+                            100: '#ffe4e9',
+                            200: '#fecdd6',
+                            300: '#fda4af',
+                            400: '#fb7185',
+                            500: '#f43f5e',
+                            600: '#e11d48',
+                            700: '#be123c',
+                            gold: '#c59b27',
+                            'gold-light': '#fef3c7',
+                            cream: '#fdfbf7'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #fcf8f6; }
+        .custom-scrollbar::-webkit-scrollbar { width: 5px; height: 5px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: #fdfaf8; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #fecdd6; border-radius: 10px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #fda4af; }
+    </style>
+</head>
+<body class="text-slate-800 min-h-screen flex flex-col antialiased">
+
+    <!-- Header Navigation tươi sáng -->
+    <header class="bg-white/95 backdrop-blur-md shadow-sm sticky top-0 z-30 border-b border-rose-100">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3.5 flex flex-wrap items-center justify-between gap-3">
+            
+            <!-- Brand Logo -->
+            <div class="flex items-center space-x-3">
+                <div class="w-10 h-10 rounded-2xl bg-gradient-to-tr from-rose-400 via-pink-300 to-amber-200 p-0.5 shadow-md shadow-rose-200/50">
+                    <div class="w-full h-full bg-white rounded-[14px] flex items-center justify-center">
+                        <i class="fa-solid fa-sparkles text-rose-500 text-lg"></i>
+                    </div>
+                </div>
+                <div>
+                    <h1 class="font-extrabold text-base sm:text-lg tracking-wider text-rose-950 flex items-center gap-2">
+                        <span>AN NHIEN BEAUTY</span>
+                        <span class="text-[9px] sm:text-[10px] uppercase font-bold tracking-widest px-2 py-0.5 bg-rose-100 text-rose-700 rounded-full border border-rose-200">Eyelash Studio</span>
+                    </h1>
+                    <p class="text-[11px] text-slate-500 font-medium">Sổ Quản Lý Nối Mi & Khách Hàng</p>
+                </div>
+            </div>
+
+            <!-- Action buttons -->
+            <div class="flex items-center space-x-2">
+                <button id="btn-sync" onclick="fetchDataFromSheet()" class="px-3 py-2 bg-rose-50 hover:bg-rose-100 text-rose-700 rounded-xl text-xs font-bold transition border border-rose-200/80 flex items-center gap-1.5 shadow-sm">
+                    <i class="fa-solid fa-rotate text-rose-500" id="sync-icon"></i>
+                    <span class="hidden sm:inline">Tải lại</span>
+                </button>
+                
+                <button onclick="openModal('settings-modal')" class="px-3 py-2 bg-slate-100 hover:bg-slate-200/80 text-slate-700 rounded-xl text-xs font-bold transition border border-slate-200 flex items-center gap-1.5 shadow-sm">
+                    <i class="fa-solid fa-link text-slate-500"></i>
+                    <span class="hidden sm:inline">Kết nối Sheet</span>
+                </button>
+                
+                <button onclick="openModal('add-modal')" class="px-3.5 py-2 bg-gradient-to-r from-rose-500 to-pink-500 hover:from-rose-600 hover:to-pink-600 text-white rounded-xl text-xs font-extrabold transition shadow-md shadow-rose-200 flex items-center gap-1.5 border border-rose-300/30">
+                    <i class="fa-solid fa-plus-circle text-sm"></i>
+                    <span>Tạo Đơn Mi</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <main class="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-5 flex-grow w-full space-y-5">
+
+        <!-- Banner Thông Báo Trạng Thái Kết Nối -->
+        <div id="status-banner" class="p-3.5 sm:p-4 rounded-2xl bg-amber-50 border border-amber-200 text-amber-900 flex items-start gap-3 shadow-sm">
+            <div class="p-2 bg-amber-100 text-amber-700 rounded-xl mt-0.5 flex-shrink-0">
+                <i class="fa-solid fa-triangle-exclamation text-base"></i>
+            </div>
+            <div class="flex-grow text-xs sm:text-sm">
+                <p class="font-bold text-amber-950" id="status-title">Chưa kết nối file Google Sheet gốc</p>
+                <p class="text-amber-800 mt-0.5 text-xs" id="status-desc">Dữ liệu hiện tại đang ở chế độ xem thử. Nhấp "Kết nối ngay" để liên kết với Google Sheet của tiệm.</p>
+            </div>
+            <button onclick="openModal('settings-modal')" class="px-3 py-1.5 bg-amber-600 hover:bg-amber-700 text-white text-xs font-bold rounded-xl shadow-sm transition whitespace-nowrap flex-shrink-0">
+                Kết nối ngay
+            </button>
+        </div>
+
+        <!-- Dashboard Thống Kê Nhanh -->
+        <div class="grid grid-cols-2 lg:grid-cols-4 gap-3">
+            
+            <!-- Tổng Lượt Khách -->
+            <div class="bg-white p-3.5 rounded-2xl shadow-sm border border-rose-100/80 flex items-center gap-3 overflow-hidden">
+                <div class="w-10 h-10 rounded-xl bg-rose-100/70 text-rose-600 flex items-center justify-center text-base font-bold flex-shrink-0">
+                    <i class="fa-solid fa-users"></i>
+                </div>
+                <div class="min-w-0 flex-1">
+                    <p class="text-[10px] sm:text-[11px] font-semibold text-slate-400 uppercase tracking-wider truncate">Tổng Lượt Khách</p>
+                    <p id="stat-count" class="text-base sm:text-lg font-extrabold text-slate-800 truncate mt-0.5">0</p>
+                </div>
+            </div>
+
+            <!-- Tổng Doanh Thu -->
+            <div class="bg-white p-3.5 rounded-2xl shadow-sm border border-emerald-100/80 flex items-center gap-3 overflow-hidden">
+                <div class="w-10 h-10 rounded-xl bg-emerald-100/70 text-emerald-600 flex items-center justify-center text-base font-bold flex-shrink-0">
+                    <i class="fa-solid fa-wallet"></i>
+                </div>
+                <div class="min-w-0 flex-1">
+                    <p class="text-[10px] sm:text-[11px] font-semibold text-slate-400 uppercase tracking-wider truncate">Tổng Doanh Thu</p>
+                    <p id="stat-revenue" class="text-base sm:text-lg font-extrabold text-emerald-600 truncate mt-0.5">0 đ</p>
+                </div>
+            </div>
+
+            <!-- Doanh Thu Chuyển Khoản -->
+            <div class="bg-white p-3.5 rounded-2xl shadow-sm border border-blue-100/80 flex items-center gap-3 overflow-hidden">
+                <div class="w-10 h-10 rounded-xl bg-blue-100/70 text-blue-600 flex items-center justify-center text-base font-bold flex-shrink-0">
+                    <i class="fa-solid fa-credit-card"></i>
+                </div>
+                <div class="min-w-0 flex-1">
+                    <p class="text-[10px] sm:text-[11px] font-semibold text-slate-400 uppercase tracking-wider truncate">Chuyển Khoản</p>
+                    <p id="stat-transfer" class="text-base sm:text-lg font-extrabold text-blue-600 truncate mt-0.5">0 đ</p>
+                </div>
+            </div>
+
+            <!-- Doanh Thu Tiền Mặt -->
+            <div class="bg-white p-3.5 rounded-2xl shadow-sm border border-amber-100/80 flex items-center gap-3 overflow-hidden">
+                <div class="w-10 h-10 rounded-xl bg-amber-100/70 text-amber-600 flex items-center justify-center text-base font-bold flex-shrink-0">
+                    <i class="fa-solid fa-money-bill-wave"></i>
+                </div>
+                <div class="min-w-0 flex-1">
+                    <p class="text-[10px] sm:text-[11px] font-semibold text-slate-400 uppercase tracking-wider truncate">Tiền Mặt</p>
+                    <p id="stat-cash" class="text-base sm:text-lg font-extrabold text-amber-600 truncate mt-0.5">0 đ</p>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Toolbar Lọc & Tìm Kiếm Thông Minh -->
+        <div class="bg-white p-3.5 sm:p-4 rounded-2xl shadow-sm border border-rose-100/80 space-y-3">
+            <div class="grid grid-cols-1 sm:grid-cols-12 gap-2.5 items-center">
+                
+                <!-- Search Box -->
+                <div class="sm:col-span-7 md:col-span-8 relative">
+                    <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-rose-300"></i>
+                    <input type="text" id="search-input" oninput="handleSearch()" placeholder="Tìm nhanh: Tên khách, SĐT, thợ làm, dáng mi..." class="w-full pl-10 pr-9 py-2 bg-rose-50/20 border border-rose-100 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-rose-400/40 text-xs sm:text-sm transition">
+                    <button id="clear-search" onclick="clearSearch()" class="hidden absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600">
+                        <i class="fa-solid fa-circle-xmark"></i>
+                    </button>
+                </div>
+
+                <!-- Filter Payment -->
+                <div class="sm:col-span-5 md:col-span-4">
+                    <select id="filter-payment" onchange="handleSearch()" class="w-full py-2 px-3 bg-rose-50/20 border border-rose-100 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-rose-400/40 text-xs sm:text-sm text-slate-700">
+                        <option value="">Tất cả thanh toán</option>
+                        <option value="Chuyển khoản">Chuyển khoản</option>
+                        <option value="Tiền mặt">Tiền mặt</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <!-- BỐ CỤC DANH MỤC KHÁCH HÀNG (Tối ưu giao diện cực kỳ dễ nhìn) -->
+        <div class="space-y-3">
+            
+            <div class="flex items-center justify-between px-1">
+                <h2 class="text-xs font-bold uppercase tracking-wider text-rose-950 flex items-center gap-2">
+                    <i class="fa-solid fa-list-check text-rose-500"></i>
+                    <span>Danh Sách Lượt Làm Mi</span>
+                </h2>
+                <span class="text-[11px] text-slate-400 font-medium">Sắp xếp theo ngày mới nhất</span>
+            </div>
+
+            <div class="bg-white rounded-2xl shadow-sm border border-rose-100/80 overflow-hidden">
+                
+                <!-- Table View (Cho Màn Hình Rộng Máy Tính/Ipad) -->
+                <div class="hidden md:block overflow-x-auto custom-scrollbar">
+                    <table class="w-full text-left border-collapse text-xs sm:text-sm">
+                        <thead>
+                            <tr class="bg-rose-50/80 text-rose-950 font-bold uppercase text-[11px] tracking-wider border-b border-rose-100">
+                                <th class="py-3 px-3.5 w-10 text-center text-rose-400">#</th>
+                                <th class="py-3 px-3.5 whitespace-nowrap">Ngày Đến</th>
+                                <th class="py-3 px-3.5 whitespace-nowrap">Tên Khách Hàng</th>
+                                <th class="py-3 px-3.5 whitespace-nowrap">Số Điện Thoại</th>
+                                <th class="py-3 px-3.5 whitespace-nowrap">Thợ Làm</th>
+                                <th class="py-3 px-3.5 whitespace-nowrap">Giá Tiền & TT</th>
+                                <th class="py-3 px-3.5">Ghi Chú Dáng Mi</th>
+                            </tr>
+                        </thead>
+                        <tbody id="customer-table-body" class="divide-y divide-rose-50 text-slate-700">
+                            <!-- Dynamic rows -->
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Card View Tối Ưu Mới (Cho Điện Thoại - Cực kỳ dễ đọc) -->
+                <div id="customer-card-list" class="block md:hidden p-3 space-y-3 bg-slate-50/50">
+                    <!-- Mobile Cards Injected Here -->
+                </div>
+
+                <!-- Empty State -->
+                <div id="empty-state" class="p-10 text-center text-slate-400">
+                    <div class="w-14 h-14 mx-auto mb-2 bg-rose-50 text-rose-300 rounded-full flex items-center justify-center text-xl">
+                        <i class="fa-solid fa-feather-pointed"></i>
+                    </div>
+                    <p class="font-bold text-slate-600 text-sm">Chưa tìm thấy đơn làm mi nào</p>
+                    <p class="text-xs text-slate-400 mt-0.5">Thử đổi từ khóa tìm kiếm hoặc bấm nút "Tạo Đơn Mi"</p>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- Modal: Thêm Đơn Nối Mi Mới -->
+    <div id="add-modal" class="fixed inset-0 bg-rose-950/20 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-white rounded-3xl shadow-2xl max-w-lg w-full overflow-hidden my-auto max-h-[92vh] flex flex-col border border-rose-100">
+            
+            <div class="px-6 py-4 bg-gradient-to-r from-rose-500 to-pink-500 text-white flex justify-between items-center">
+                <div class="flex items-center gap-2.5">
+                    <div class="w-8 h-8 rounded-xl bg-white/20 flex items-center justify-center text-white">
+                        <i class="fa-solid fa-eye text-sm"></i>
+                    </div>
+                    <div>
+                        <h3 class="font-bold text-base leading-snug">AN NHIEN BEAUTY - Đơn Mi Mới</h3>
+                        <p class="text-[11px] text-rose-100">Điền thông tin đơn làm mi cho khách</p>
+                    </div>
+                </div>
+                <button onclick="closeModal('add-modal')" class="text-rose-100 hover:text-white transition w-8 h-8 rounded-full flex items-center justify-center bg-white/10">
+                    <i class="fa-solid fa-xmark text-base"></i>
+                </button>
+            </div>
+            
+            <form id="add-customer-form" onsubmit="saveCustomer(event)" class="p-6 overflow-y-auto space-y-4 text-xs sm:text-sm custom-scrollbar">
+                
+                <div>
+                    <label class="block font-semibold text-slate-700 mb-1">Ngày Khách Đến <span class="text-rose-500">*</span></label>
+                    <input type="date" id="add-date" required class="w-full px-3.5 py-2.5 bg-rose-50/20 border border-slate-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-rose-400/40 focus:outline-none font-medium">
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+                    <div>
+                        <label class="block font-semibold text-slate-700 mb-1">Tên Khách Hàng <span class="text-rose-500">*</span></label>
+                        <input type="text" id="add-name" required placeholder="Chị Linh, Em Ngọc..." class="w-full px-3.5 py-2.5 bg-rose-50/20 border border-slate-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-rose-400/40 focus:outline-none">
+                    </div>
+                    <div>
+                        <label class="block font-semibold text-slate-700 mb-1">Số Điện Thoại</label>
+                        <input type="tel" id="add-phone" placeholder="0912345678" class="w-full px-3.5 py-2.5 bg-rose-50/20 border border-slate-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-rose-400/40 focus:outline-none font-mono">
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block font-semibold text-slate-700 mb-1">Thợ Nối Mi Phụ Trách <span class="text-rose-500">*</span></label>
+                    <input type="text" id="add-staff" required placeholder="Tên thợ (VD: Lan, Hoa, Hằng...)" class="w-full px-3.5 py-2.5 bg-rose-50/20 border border-slate-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-rose-400/40 focus:outline-none">
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+                    <div>
+                        <label class="block font-semibold text-slate-700 mb-1">Giá Tiền (VNĐ)</label>
+                        <input type="number" id="add-amount" placeholder="250000" class="w-full px-3.5 py-2.5 bg-rose-50/20 border border-slate-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-rose-400/40 focus:outline-none font-semibold text-slate-800">
+                    </div>
+                    <div>
+                        <label class="block font-semibold text-slate-700 mb-1">Hình Thức Thanh Toán</label>
+                        <select id="add-payment" class="w-full px-3.5 py-2.5 bg-rose-50/20 border border-slate-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-rose-400/40 focus:outline-none font-medium">
+                            <option value="Chuyển khoản">Chuyển khoản</option>
+                            <option value="Tiền mặt">Tiền mặt</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block font-semibold text-slate-700 mb-1">Ghi Chú Dáng Mi <span class="text-slate-400 font-normal">(Thợ tự điền)</span></label>
+                    <textarea id="add-note" rows="3" placeholder="Ví dụ: Katun 10-11-12mm, Cong C, mắt cay nhẹ..." class="w-full px-3.5 py-2.5 bg-rose-50/20 border border-slate-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-rose-400/40 focus:outline-none"></textarea>
+                </div>
+
+                <div class="pt-3 flex justify-end gap-3 border-t border-rose-100">
+                    <button type="button" onclick="closeModal('add-modal')" class="px-4 py-2.5 border border-slate-200 hover:bg-slate-50 text-slate-600 rounded-xl font-semibold transition">
+                        Hủy
+                    </button>
+                    <button type="submit" id="btn-submit-add" class="px-5 py-2.5 bg-gradient-to-r from-rose-500 to-pink-500 hover:from-rose-600 hover:to-pink-600 text-white font-bold rounded-xl shadow-lg shadow-rose-200 transition flex items-center gap-2">
+                        <i class="fa-solid fa-floppy-disk"></i>
+                        <span>Lưu Đơn Mi</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal: Cấu Hình Apps Script URL -->
+    <div id="settings-modal" class="fixed inset-0 bg-rose-950/20 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-white rounded-3xl shadow-2xl max-w-2xl w-full overflow-hidden flex flex-col max-h-[90vh] border border-rose-100">
+            <div class="px-6 py-4 bg-rose-50 border-b border-rose-100 flex justify-between items-center">
+                <h3 class="font-bold text-base text-rose-900 flex items-center gap-2">
+                    <i class="fa-solid fa-sliders text-rose-500"></i> Cấu Hình Google Sheet Web App
+                </h3>
+                <button onclick="closeModal('settings-modal')" class="text-slate-400 hover:text-slate-700 transition w-8 h-8 rounded-full flex items-center justify-center bg-white shadow-sm">
+                    <i class="fa-solid fa-xmark text-base"></i>
+                </button>
+            </div>
+            
+            <div class="p-6 overflow-y-auto space-y-4 custom-scrollbar text-xs sm:text-sm">
+                <div>
+                    <label class="block font-bold text-slate-800 mb-1">
+                        Dán URL Apps Script Web App của tiệm vào đây:
+                    </label>
+                    <input type="url" id="webapp-url-input" placeholder="https://script.google.com/macros/s/.../exec" class="w-full px-3.5 py-2.5 border border-slate-200 rounded-xl focus:ring-2 focus:ring-rose-400/40 focus:outline-none font-mono text-xs bg-slate-50">
+                </div>
+
+                <div class="border-t border-slate-100 pt-3">
+                    <h4 class="font-bold text-rose-600 mb-1">Mã Apps Script Dành Cho Tiệm AN NHIEN BEAUTY:</h4>
+                    <p class="text-xs text-slate-500 mb-2">Vào Google Sheet $\rightarrow$ Mở rộng $\rightarrow$ Apps Script $\rightarrow$ Dán toàn bộ đoạn code dưới đây:</p>
+                    
+                    <div class="relative bg-rose-50/50 text-slate-800 rounded-2xl p-4 font-mono text-xs overflow-x-auto max-h-52 custom-scrollbar border border-rose-100">
+                        <button onclick="copyAppsScriptCode()" class="absolute top-3 right-3 px-3 py-1 bg-white hover:bg-slate-50 text-rose-700 rounded-lg text-xs transition border border-rose-200 shadow-sm flex items-center gap-1.5 font-bold">
+                            <i class="fa-solid fa-copy"></i> Sao chép
+                        </button>
+                        <pre id="script-code">
+function doGet(e) {
+  var sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
+  var data = sheet.getDataRange().getValues();
+  if (data.length <= 1) {
+    return ContentService.createTextOutput(JSON.stringify([])).setMimeType(ContentService.MimeType.JSON);
+  }
+  var headers = data[0];
+  var result = [];
+  for (var i = 1; i < data.length; i++) {
+    var row = data[i];
+    var obj = {};
+    for (var j = 0; j < headers.length; j++) {
+      obj[headers[j]] = row[j] !== undefined ? String(row[j]) : "";
+    }
+    result.push(obj);
+  }
+  return ContentService.createTextOutput(JSON.stringify(result))
+    .setMimeType(ContentService.MimeType.JSON);
+}
+
+function doPost(e) {
+  try {
+    var sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
+    var p = JSON.parse(e.postData.contents);
+    
+    if (sheet.getLastRow() === 0) {
+      sheet.appendRow(["Ngày Khách Đến", "Tên Khách", "Số Điện Thoại", "Thợ Làm", "Hình Thức TT", "Giá Tiền", "Ghi Chú Dáng Mi"]);
+    }
+    
+    sheet.appendRow([
+      p.date || "",
+      p.name || "",
+      "'" + (p.phone || ""),
+      p.staff || "",
+      p.payment || "Chuyển khoản",
+      p.amount || 0,
+      p.note || ""
+    ]);
+    
+    return ContentService.createTextOutput(JSON.stringify({ status: "success" })).setMimeType(ContentService.MimeType.JSON);
+  } catch (err) {
+    return ContentService.createTextOutput(JSON.stringify({ status: "error", message: err.toString() })).setMimeType(ContentService.MimeType.JSON);
+  }
+}</pre>
+                    </div>
+                </div>
+            </div>
+
+            <div class="p-4 bg-slate-50 border-t border-slate-100 flex justify-end gap-3">
+                <button onclick="closeModal('settings-modal')" class="px-4 py-2 border border-slate-200 text-slate-600 text-xs font-semibold rounded-xl">Đóng</button>
+                <button onclick="saveSettings()" class="px-5 py-2 bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold rounded-xl shadow-md">Lưu Cấu Hình</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div id="toast-container" class="fixed bottom-5 right-5 z-50 space-y-2 pointer-events-none"></div>
+
+    <script>
+        let customers = [];
+        let filteredCustomers = [];
+        let webAppUrl = localStorage.getItem('eyelash_webapp_url') || '';
+
+        // Dữ liệu mẫu minh họa salon AN NHIEN BEAUTY
+        const mockData = [
+            { "Ngày Khách Đến": "2026-03-03", "Tên Khách": "Chị Trâm Anh", "Số Điện Thoại": "0908123456", "Thợ Làm": "Lan", "Hình Thức TT": "Chuyển khoản", "Giá Tiền": "350000", "Ghi Chú Dáng Mi": "Design Katun 10-11-12mm, Cong C, mắt cay nhẹ" },
+            { "Ngày Khách Đến": "2026-03-03", "Tên Khách": "Bạn Thu Hà", "Số Điện Thoại": "0934567890", "Thợ Làm": "Hoa", "Hình Thức TT": "Tiền mặt", "Giá Tiền": "250000", "Ghi Chú Dáng Mi": "Classic tự nhiên 9-10-11mm, mi thật mỏng" },
+            { "Ngày Khách Đến": "2026-03-02", "Tên Khách": "Chị Ngọc Ánh", "Số Điện Thoại": "0977112233", "Thợ Làm": "Hằng", "Hình Thức TT": "Chuyển khoản", "Giá Tiền": "400000", "Ghi Chú Dáng Mi": "Volume 11-12-13-14mm, cong CC dày mượt" }
+        ];
+
+        window.addEventListener('DOMContentLoaded', () => {
+            document.getElementById('add-date').value = new Date().toISOString().split('T')[0];
+
+            if (webAppUrl) {
+                document.getElementById('webapp-url-input').value = webAppUrl;
+                updateStatusBanner(true, 'Đã liên kết Google Sheet', 'Dữ liệu được tự động lưu về Google Sheet của tiệm.');
+                fetchDataFromSheet();
+            } else {
+                customers = [...mockData];
+                filteredCustomers = [...customers];
+                renderCustomers();
+                showToast('Chế độ xem thử: Dữ liệu mẫu AN NHIEN BEAUTY.', 'info');
+            }
+        });
+
+        function removeAccents(str) {
+            if (!str) return '';
+            return String(str)
+                .normalize('NFD')
+                .replace(/[\u0300-\u036f]/g, '')
+                .replace(/đ/g, 'd').replace(/Đ/g, 'D')
+                .toLowerCase();
+        }
+
+        function handleSearch() {
+            const queryRaw = document.getElementById('search-input').value.trim();
+            const queryClean = removeAccents(queryRaw);
+            const paymentFilter = document.getElementById('filter-payment').value;
+            const clearBtn = document.getElementById('clear-search');
+
+            if (queryRaw.length > 0) clearBtn.classList.remove('hidden');
+            else clearBtn.classList.add('hidden');
+
+            filteredCustomers = customers.filter(item => {
+                const name = removeAccents(item["Tên Khách"] || item["name"] || '');
+                const phone = String(item["Số Điện Thoại"] || item["phone"] || '').replace(/\D/g, '');
+                const staff = removeAccents(item["Thợ Làm"] || item["staff"] || '');
+                const note = removeAccents(item["Ghi Chú Dáng Mi"] || item["Ghi Chú"] || item["note"] || '');
+                const payment = item["Hình Thức TT"] || item["payment"] || '';
+
+                const matchesQuery = !queryClean || 
+                    name.includes(queryClean) || 
+                    staff.includes(queryClean) ||
+                    note.includes(queryClean) ||
+                    phone.includes(queryRaw.replace(/\D/g, ''));
+
+                const matchesPayment = !paymentFilter || payment === paymentFilter;
+
+                return matchesQuery && matchesPayment;
+            });
+
+            renderCustomers();
+        }
+
+        function clearSearch() {
+            document.getElementById('search-input').value = '';
+            document.getElementById('filter-payment').value = '';
+            handleSearch();
+        }
+
+        function formatCurrencyCompact(val) {
+            return Number(val).toLocaleString('vi-VN') + ' đ';
+        }
+
+        function calculateStats() {
+            let totalRev = 0;
+            let transferRev = 0;
+            let cashRev = 0;
+
+            filteredCustomers.forEach(item => {
+                const amount = Number(item["Giá Tiền"] || item["amount"] || 0);
+                const payment = item["Hình Thức TT"] || item["payment"] || "Chuyển khoản";
+
+                totalRev += amount;
+                if (payment === 'Chuyển khoản') transferRev += amount;
+                else cashRev += amount;
+            });
+
+            document.getElementById('stat-count').textContent = filteredCustomers.length;
+            document.getElementById('stat-revenue').textContent = formatCurrencyCompact(totalRev);
+            document.getElementById('stat-transfer').textContent = formatCurrencyCompact(transferRev);
+            document.getElementById('stat-cash').textContent = formatCurrencyCompact(cashRev);
+        }
+
+        function renderCustomers() {
+            const tbody = document.getElementById('customer-table-body');
+            const cardList = document.getElementById('customer-card-list');
+            const emptyState = document.getElementById('empty-state');
+
+            tbody.innerHTML = '';
+            cardList.innerHTML = '';
+
+            calculateStats();
+
+            if (filteredCustomers.length === 0) {
+                emptyState.classList.remove('hidden');
+                return;
+            } else {
+                emptyState.classList.add('hidden');
+            }
+
+            filteredCustomers.forEach((item, index) => {
+                const date = item["Ngày Khách Đến"] || item["date"] || "-";
+                const name = item["Tên Khách"] || item["name"] || "Khách vô danh";
+                const rawPhone = item["Số Điện Thoại"] || item["phone"] || "";
+                const phone = String(rawPhone).startsWith('0') || String(rawPhone).startsWith('+') ? rawPhone : (rawPhone ? '0' + rawPhone : '');
+                const staff = item["Thợ Làm"] || item["staff"] || "-";
+                const payment = item["Hình Thức TT"] || item["payment"] || "Chuyển khoản";
+                const amount = item["Giá Tiền"] || item["amount"] ? Number(item["Giá Tiền"] || item["amount"]).toLocaleString('vi-VN') + ' đ' : '0 đ';
+                const note = item["Ghi Chú Dáng Mi"] || item["Ghi Chú"] || item["note"] || "-";
+
+                const isTransfer = payment === 'Chuyển khoản';
+                const paymentBadgeClass = isTransfer 
+                    ? 'bg-blue-50 text-blue-700 border-blue-200' 
+                    : 'bg-emerald-50 text-emerald-700 border-emerald-200';
+                
+                const paymentIcon = isTransfer ? 'fa-credit-card' : 'fa-money-bill-wave';
+
+                // Desktop Table Row
+                const tr = document.createElement('tr');
+                tr.className = 'hover:bg-rose-50/40 transition border-b border-rose-50 text-xs sm:text-sm';
+                tr.innerHTML = `
+                    <td class="py-3 px-3.5 font-bold text-rose-300 text-center">${index + 1}</td>
+                    <td class="py-3 px-3.5 font-semibold text-slate-600 whitespace-nowrap">${escapeHtml(date)}</td>
+                    <td class="py-3 px-3.5 font-bold text-rose-950 whitespace-nowrap">${escapeHtml(name)}</td>
+                    <td class="py-3 px-3.5 font-mono text-rose-600 font-semibold whitespace-nowrap">
+                        ${phone ? `<a href="tel:${phone}" class="hover:underline flex items-center gap-1.5"><i class="fa-solid fa-phone text-[10px] text-rose-400"></i> ${escapeHtml(phone)}</a>` : '-'}
+                    </td>
+                    <td class="py-3 px-3.5 font-medium whitespace-nowrap">
+                        <span class="px-2.5 py-1 bg-rose-50/80 text-rose-800 rounded-lg text-xs font-bold inline-flex items-center gap-1.5 border border-rose-100">
+                            <i class="fa-solid fa-heart text-[10px] text-rose-500"></i> ${escapeHtml(staff)}
+                        </span>
+                    </td>
+                    <td class="py-3 px-3.5 whitespace-nowrap">
+                        <div class="font-extrabold text-slate-800">${amount}</div>
+                        <span class="text-[10px] px-2 py-0.5 rounded-md border ${paymentBadgeClass} font-semibold inline-flex items-center gap-1 mt-0.5">
+                            <i class="fa-solid ${paymentIcon}"></i> ${escapeHtml(payment)}
+                        </span>
+                    </td>
+                    <td class="py-3 px-3.5 text-slate-600 leading-relaxed">${escapeHtml(note)}</td>
+                `;
+                tbody.appendChild(tr);
+
+                // Mobile Card (Thiết kế cực kỳ rõ ràng, dễ nhìn)
+                const card = document.createElement('div');
+                card.className = 'bg-white border border-rose-100 rounded-2xl p-3.5 shadow-sm space-y-2.5';
+                card.innerHTML = `
+                    <!-- Hàng 1: Khách hàng + Số tiền -->
+                    <div class="flex justify-between items-start gap-2 border-b border-slate-100 pb-2">
+                        <div>
+                            <div class="flex items-center gap-2">
+                                <h4 class="font-bold text-slate-900 text-base leading-tight">${escapeHtml(name)}</h4>
+                            </div>
+                            ${phone ? `<a href="tel:${phone}" class="text-xs font-mono text-rose-600 font-semibold inline-flex items-center gap-1 mt-1 bg-rose-50 px-2 py-0.5 rounded-lg"><i class="fa-solid fa-phone text-[10px]"></i> ${escapeHtml(phone)}</a>` : ''}
+                        </div>
+                        <div class="text-right flex-shrink-0">
+                            <div class="font-black text-rose-950 text-base">${amount}</div>
+                            <span class="text-[10px] px-2 py-0.5 rounded-md border ${paymentBadgeClass} font-bold inline-flex items-center gap-1 mt-0.5">
+                                <i class="fa-solid ${paymentIcon}"></i> ${escapeHtml(payment)}
+                            </span>
+                        </div>
+                    </div>
+
+                    <!-- Hàng 2: Thợ + Ngày làm -->
+                    <div class="flex items-center justify-between text-xs text-slate-600 bg-rose-50/40 p-2 rounded-xl">
+                        <div class="flex items-center gap-1.5 font-bold text-rose-900">
+                            <i class="fa-solid fa-heart text-rose-500 text-xs"></i>
+                            <span>Thợ: ${escapeHtml(staff)}</span>
+                        </div>
+                        <div class="text-[11px] font-medium text-slate-400">
+                            <i class="fa-regular fa-calendar text-[10px] mr-1"></i>${escapeHtml(date)}
+                        </div>
+                    </div>
+
+                    <!-- Hàng 3: Ghi chú dáng mi -->
+                    ${note && note !== '-' ? `
+                    <div class="text-xs text-slate-600 pt-0.5">
+                        <span class="font-bold text-slate-400 text-[11px]">Dáng mi:</span> 
+                        <span class="font-medium text-slate-800">${escapeHtml(note)}</span>
+                    </div>` : ''}
+                `;
+                cardList.appendChild(card);
+            });
+        }
+
+        async function fetchDataFromSheet() {
+            if (!webAppUrl) {
+                showToast('Chưa nhập URL WebApp Google Sheet!', 'error');
+                openModal('settings-modal');
+                return;
+            }
+
+            const syncIcon = document.getElementById('sync-icon');
+            syncIcon.classList.add('fa-spin');
+
+            try {
+                const response = await fetch(webAppUrl);
+                const data = await response.json();
+                if (Array.isArray(data)) {
+                    customers = data;
+                    handleSearch();
+                    showToast(`Tải ${customers.length} lượt khách thành công!`, 'success');
+                    updateStatusBanner(true, 'Đã liên kết Google Sheet', `Dữ liệu được tự động lưu về Google Sheet của tiệm.`);
+                }
+            } catch (err) {
+                showToast('Lỗi tải dữ liệu: ' + err.message, 'error');
+                updateStatusBanner(false, 'Không thể kết nối Google Sheet', err.message);
+            } finally {
+                syncIcon.classList.remove('fa-spin');
+            }
+        }
+
+        async function saveCustomer(e) {
+            e.preventDefault();
+            const btn = document.getElementById('btn-submit-add');
+            btn.disabled = true;
+
+            const newCustomer = {
+                date: document.getElementById('add-date').value,
+                name: document.getElementById('add-name').value.trim(),
+                phone: document.getElementById('add-phone').value.trim(),
+                staff: document.getElementById('add-staff').value.trim(),
+                amount: document.getElementById('add-amount').value || 0,
+                payment: document.getElementById('add-payment').value,
+                note: document.getElementById('add-note').value.trim()
+            };
+
+            if (!webAppUrl) {
+                customers.unshift({
+                    "Ngày Khách Đến": newCustomer.date,
+                    "Tên Khách": newCustomer.name,
+                    "Số Điện Thoại": newCustomer.phone,
+                    "Thợ Làm": newCustomer.staff,
+                    "Giá Tiền": newCustomer.amount,
+                    "Hình Thức TT": newCustomer.payment,
+                    "Ghi Chú Dáng Mi": newCustomer.note
+                });
+                handleSearch();
+                closeModal('add-modal');
+                document.getElementById('add-customer-form').reset();
+                document.getElementById('add-date').value = new Date().toISOString().split('T')[0];
+                showToast('Đã lưu tạm (chưa liên kết URL Google Sheet).', 'success');
+                btn.disabled = false;
+                return;
+            }
+
+            try {
+                await fetch(webAppUrl, {
+                    method: 'POST',
+                    mode: 'no-cors',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(newCustomer)
+                });
+
+                showToast('Đã lưu lượt nối mi thành công!', 'success');
+                closeModal('add-modal');
+                document.getElementById('add-customer-form').reset();
+                document.getElementById('add-date').value = new Date().toISOString().split('T')[0];
+                setTimeout(fetchDataFromSheet, 1000);
+            } catch (err) {
+                showToast('Lỗi lưu: ' + err.message, 'error');
+            } finally {
+                btn.disabled = false;
+            }
+        }
+
+        function saveSettings() {
+            const url = document.getElementById('webapp-url-input').value.trim();
+            webAppUrl = url;
+            localStorage.setItem('eyelash_webapp_url', webAppUrl);
+            closeModal('settings-modal');
+            if (webAppUrl) fetchDataFromSheet();
+        }
+
+        function updateStatusBanner(isSuccess, title, desc) {
+            const banner = document.getElementById('status-banner');
+            document.getElementById('status-title').textContent = title;
+            document.getElementById('status-desc').textContent = desc;
+            banner.className = isSuccess 
+                ? "p-3.5 sm:p-4 rounded-2xl bg-emerald-50 border border-emerald-200 text-emerald-900 flex items-start gap-3 shadow-sm"
+                : "p-3.5 sm:p-4 rounded-2xl bg-amber-50 border border-amber-200 text-amber-900 flex items-start gap-3 shadow-sm";
+        }
+
+        function openModal(id) { document.getElementById(id).classList.remove('hidden'); }
+        function closeModal(id) { document.getElementById(id).classList.add('hidden'); }
+
+        function copyAppsScriptCode() {
+            const code = document.getElementById('script-code').innerText;
+            navigator.clipboard.writeText(code);
+            showToast('Đã sao chép mã Apps Script!', 'success');
+        }
+
+        function showToast(msg, type = 'info') {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            let bg = 'bg-rose-900 text-white';
+            if (type === 'success') bg = 'bg-emerald-600 text-white';
+            if (type === 'error') bg = 'bg-rose-600 text-white';
+
+            toast.className = `px-4 py-3 rounded-2xl shadow-xl font-bold text-xs flex items-center gap-2 transform transition-all duration-300 translate-y-2 opacity-0 pointer-events-auto border border-white/20 ${bg}`;
+            toast.textContent = msg;
+            container.appendChild(toast);
+            setTimeout(() => toast.classList.remove('translate-y-2', 'opacity-0'), 10);
+            setTimeout(() => { toast.classList.add('opacity-0'); setTimeout(() => toast.remove(), 300); }, 3000);
+        }
+
+        function escapeHtml(str) {
+            if (!str) return '';
+            return String(str).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+        }
+    </script>
+</body>
+</html>
